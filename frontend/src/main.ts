@@ -2,18 +2,15 @@ import "./style.css";
 import http from "axios";
 import { z } from "zod";
 
-const CharacterResponseSchema = z.object({
-  info: z.object({ next: z.string() }),
-  results: z.object({ name: z.string() }).array(),
-});
-type CharacterResponse = z.infer<typeof CharacterResponseSchema>;
+const ResponseSchema = z.string();
+type ResponseSchema = z.infer<typeof ResponseSchema>;
 
-const load = async (): Promise<CharacterResponse | null> => {
+const load = async (a: string, b: string): Promise<ResponseSchema | null> => {
 
-  const response = await http.get("https://rickandmortyapi.com/api/character");
+  const response = await http.get("http://localhost:3333", { params: { "v1": a, "v2": b } });
   const data = response.data
 
-  const result = CharacterResponseSchema.safeParse(data);
+  const result = ResponseSchema.safeParse(data);
 
   if (!result.success) {
     console.log(result.error);
@@ -24,9 +21,11 @@ const load = async (): Promise<CharacterResponse | null> => {
 };
 
 const init = async () => {
-  const characters = await load();
-  if (characters)
-    document.getElementById("app")!.innerHTML = characters.results[0].name;
+  const value1 = (document.getElementById("elso") as HTMLInputElement).value
+  const value2 = (document.getElementById("masodik") as HTMLInputElement).value
+  const str = await load(value1, value2);
+  if (str)
+    document.getElementById("app")!.innerHTML = str
 };
 
 document.getElementById("load-button")!.addEventListener("click", init);
