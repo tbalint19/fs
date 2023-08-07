@@ -1,35 +1,46 @@
 import "./style.css";
-import http from "axios";
-import { z } from "zod";
 
-const ResponseSchema = z.string();
-type ResponseSchema = z.infer<typeof ResponseSchema>;
+const sum = (x: number, y: number): number => {
+  return x + y
+}
 
-const load = async (a: string, b: string): Promise<ResponseSchema | null> => {
+const myButton = document.getElementById("load-button") as HTMLButtonElement
+// or...
+// const myButton = document.getElementsByTagName("button")
+// const button = document.querySelector("#load-button")
+// ... document. -> help
 
-  const response = await http.get("http://localhost:3333", { headers: { "v1": a, "v2": b } });
-  const data = response.data
+const myInput1 = document.getElementById("elso") as HTMLInputElement
+const myInput2 = document.getElementById("masodik") as HTMLInputElement
 
-  const result = ResponseSchema.safeParse(data);
+myButton.addEventListener("click", (event) => {
 
-  if (!result.success) {
-    console.log(result.error);
-    return null;
-  }
+  //  event.clientX
 
-  return result.data;
-};
+  const inputVal1 = myInput1.value
+  const inputVal2 = myInput2.value
+  const result = sum(+inputVal1, +inputVal2)
+  const appDiv = document.getElementById("app") as HTMLDivElement
+  // appDiv.innerHTML = '<p style="color:red" id="14" class="mas">' + result + "</p>"
+  appDiv.innerHTML = `
+    <p style="color:red" id="14" class="mas">
+      ${result}
+    </p>
+  `
 
-const init = async () => {
-  const value1 = (document.getElementById("elso") as HTMLInputElement).value
-  const value2 = (document.getElementById("masodik") as HTMLInputElement).value
-  const str = await load(value1, value2);
-  if (str)
-    document.getElementById("app")!.innerHTML = str
-};
+  // or...
 
-document.getElementById("load-button")!.addEventListener("click", init);
+  const pElement = document.createElement("p")
+  pElement.innerText = "" + result
 
-document
-  .getElementById("app")!
-  .insertAdjacentHTML("afterend", "<p class='bg-pink-400'>demo</p>");
+  pElement.id = "1"
+  pElement.addEventListener("click", () => {})
+
+  appDiv.appendChild(pElement)
+})
+
+const sport = "foci"
+const country = "magyarorszag"
+
+//const url = "https://nemzetisport.hu?sport=" + sport + "&orszag=" + country
+const url = `https://nemzetisport.hu?sport=${sport}&orszag=${country}`
