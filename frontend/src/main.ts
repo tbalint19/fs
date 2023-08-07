@@ -7,7 +7,7 @@ type ResponseSchema = z.infer<typeof ResponseSchema>;
 
 const load = async (a: string, b: string): Promise<ResponseSchema | null> => {
 
-  const response = await http.get("http://localhost:3333", { params: { "v1": a, "v2": b } });
+  const response = await http.get("http://localhost:3333", { headers: { "v1": a, "v2": b } });
   const data = response.data
 
   const result = ResponseSchema.safeParse(data);

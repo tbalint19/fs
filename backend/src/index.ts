@@ -1,32 +1,69 @@
 import express from "express"
 import type { Request, Response } from "express"
 import cors from "cors"
+import fs from "fs/promises"
 import { z } from "zod"
 
 const server = express()
 
 server.use(cors())
 
-const RequestSchema = z.object({
-  v1: z.string(),
-  v2: z.string(),
+type User = {
+  id: number
+  name: string
+  age: number
+}
+
+const parse = (data: string): User[] => data
+    .split("\n")
+    .filter(row => !!row)
+    .map(row => ({
+      id: +row.split(",")[0],
+      name: row.split(",")[1],
+      age: +row.split(",")[2],
+    }))
+
+// REST API - GET (method) /api/users (path) -> array
+/* server.get("/api/users", async (req: Request, res: Response) => {
+
+  const userData = await fs.readFile("./database/users.txt", "utf-8")
+
+  const response: User[] = parse(userData)
+
+  res.json(response)
+}) */
+
+const QuerySchema = z.object({
+  name: z.string(),
 })
 
-server.get("/", (req: Request, res: Response) => {
+// GET /api/users?name=John   /api/users?age=30&name=John  -> array
+/* server.get("/api/users", async (req: Request, res: Response) => {
 
-  /* req.query
-  req.method
-  req.headers
-  req.body
-  req.path
-  req.params */
-
-  const result = RequestSchema.safeParse(req.query)
-
+  const result = QuerySchema.safeParse(req.query)
   if (!result.success)
-    res.sendStatus(400)
-  else
-    res.send("result is: " + result.data.v1 + result.data.v2)
+    return res.sendStatus(400)
+  const query = result.data
+
+  const userData = await fs.readFile("./database/users.txt", "utf-8")
+  const users = parse(userData)
+  let filteredUsers = users.filter(user => user.name.includes(query.name))
+
+  res.json(filteredUsers)
+}) */
+
+// GET /api/users/15 (id!!!!) path variable -> 1 object
+server.get("/api/users/:id", async (req: Request, res: Response) => {
+  const id = +req.params.id
+
+  const userData = await fs.readFile("./database/users.txt", "utf-8")
+  const users = parse(userData)
+  let filteredUser = users.find(user => user.id === id)
+
+  if (!filteredUser)
+    return res.sendStatus(404)
+
+  res.json(filteredUser)
 })
 
 server.listen(3333)
