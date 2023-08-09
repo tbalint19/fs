@@ -48,7 +48,7 @@ server.get("/api/users", async (req: Request, res: Response) => {
   res.json(filteredUsers)
 })
 
-// GET /api/users/15 (id!!!!) path variable -> 1 object
+// GET /api/users/15 (id!!!!) path variable -> 1 object / HTTP404
 server.get("/api/users/:id", async (req: Request, res: Response) => {
   const id = +req.params.id
 
@@ -62,6 +62,28 @@ server.get("/api/users/:id", async (req: Request, res: Response) => {
   res.json(filteredUser)
 })
 
+const CreationSchema = z.object({
+  name: z.string(),
+  age: z.string(),
+  id: z.string(),
+})
+
+// POST /api/users - works, but not best practice yet
+server.post("/api/users", async (req: Request, res: Response) => {
+
+  const result = CreationSchema.safeParse(req.query)
+  if (!result.success)
+    return res.sendStatus(400)
+
+  const userData = await fs.readFile("./database/users.txt", "utf-8")
+  const users = parse(userData)
+  users.push({ name: result.data.name, age: +result.data.age, id: +result.data.id })
+  await fs.writeFile("./database/users.txt", stringify(users), "utf-8")
+
+  res.sendStatus(200)
+})
+
+// DELETE /api/users/15 (id!!!!) path variable -> HTTP200
 server.delete("/api/users/:id", async (req: Request, res: Response) => {
   const id = +req.params.id
 

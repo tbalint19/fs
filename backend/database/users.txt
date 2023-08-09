@@ -1,6 +1,12 @@
 3,Jake Strong,40
 32,Jake Strong,50
 34,Jake Strong,60
-35,Béla Strong,70
 36,Jake Strong,90
 31,Jake Strong,40
+50,bela,10
+50,bela,10
+50,bela,10
+50,bela,10
+50,bela,10
+56,bela,56
+56,bela,56
