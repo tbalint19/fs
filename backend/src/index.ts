@@ -65,7 +65,6 @@ server.get("/api/users/:id", async (req: Request, res: Response) => {
 const CreationSchema = z.object({
   name: z.string(),
   age: z.number(),
-  id: z.number(),
 })
 
 // POST /api/users
@@ -73,14 +72,15 @@ server.post("/api/users", async (req: Request, res: Response) => {
 
   const result = CreationSchema.safeParse(req.body)
   if (!result.success)
-    return res.sendStatus(400)
+  return res.status(400).json(result.error.issues)
 
   const userData = await fs.readFile("./database/users.txt", "utf-8")
   const users = parse(userData)
-  users.push({ name: result.data.name, age: result.data.age, id: Math.random() })
+  const id = Math.random()
+  users.push({ ...result.data, id })
   await fs.writeFile("./database/users.txt", stringify(users), "utf-8")
 
-  res.sendStatus(200)
+  res.json({ id })
 })
 
 const UpdateSchema = z.object({
@@ -93,7 +93,7 @@ server.patch("/api/users/:id", async (req: Request, res: Response) => {
   const id = +req.params.id
   const result = UpdateSchema.safeParse(req.body)
   if (!result.success)
-    return res.sendStatus(400)
+    return res.status(400).json(result.error.issues)
 
   const userData = await fs.readFile("./database/users.txt", "utf-8")
   const users = parse(userData)
@@ -124,5 +124,13 @@ server.delete("/api/users/:id", async (req: Request, res: Response) => {
 
   res.sendStatus(200)
 })
+
+// GET /api/tweets?content=valami (also without query params) -> array (empty...)
+// GET /api/tweets/15 -> object / 404
+// POST /api/tweets -> id / 400
+// PATCH /api/tweets/15 -> 200 / 400 / 404
+// DELETE /api/tweets/15 -> 200 / ?404
+
+// GET /api/users/15/tweets -> array
 
 server.listen(3333)
