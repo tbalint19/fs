@@ -64,21 +64,50 @@ server.get("/api/users/:id", async (req: Request, res: Response) => {
 
 const CreationSchema = z.object({
   name: z.string(),
-  age: z.string(),
-  id: z.string(),
+  age: z.number(),
+  id: z.number(),
 })
 
-// POST /api/users - works, but not best practice yet
+// POST /api/users
 server.post("/api/users", async (req: Request, res: Response) => {
 
-  const result = CreationSchema.safeParse(req.query)
+  const result = CreationSchema.safeParse(req.body)
   if (!result.success)
     return res.sendStatus(400)
 
   const userData = await fs.readFile("./database/users.txt", "utf-8")
   const users = parse(userData)
-  users.push({ name: result.data.name, age: +result.data.age, id: +result.data.id })
+  users.push({ name: result.data.name, age: result.data.age, id: Math.random() })
   await fs.writeFile("./database/users.txt", stringify(users), "utf-8")
+
+  res.sendStatus(200)
+})
+
+const UpdateSchema = z.object({
+  name: z.string().min(1).optional(),
+  age: z.number().optional(),
+})
+
+// PATCH /api/users/15
+server.patch("/api/users/:id", async (req: Request, res: Response) => {
+  const id = +req.params.id
+  const result = UpdateSchema.safeParse(req.body)
+  if (!result.success)
+    return res.sendStatus(400)
+
+  const userData = await fs.readFile("./database/users.txt", "utf-8")
+  const users = parse(userData)
+  let filteredUser = users.find(user => user.id === id)
+  if (filteredUser)
+    return res.sendStatus(404)
+
+  const updatedUsers: User[] = users.map(user => user.id === id ? {
+    id,
+    name: result.data.name || user.name,
+    age: result.data.age === undefined ? user.age : result.data.age,
+  } : user)
+  
+  await fs.writeFile("./database/users.txt", stringify(updatedUsers), "utf-8")
 
   res.sendStatus(200)
 })
